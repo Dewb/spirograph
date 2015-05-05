@@ -1,7 +1,12 @@
-<Workspace Version="0.8.0.950" X="62.4634776474677" Y="670.54011549374" zoom="0.759891129553955" Name="Home" RunType="Automatic" RunPeriod="100" HasRunWithoutCrash="True">
-  <NamespaceResolutionMap />
+<Workspace Version="0.8.0.950" X="40.9097490058157" Y="48.4792103161151" zoom="0.610282075168554" Name="Home" RunType="Manual" RunPeriod="100" HasRunWithoutCrash="True">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Plane" resolvedName="Autodesk.DesignScript.Geometry.Plane" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Rectangle" resolvedName="Autodesk.DesignScript.Geometry.Rectangle" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Math" resolvedName="DSCore.Math" assemblyName="DSCoreNodes.dll" />
+  </NamespaceResolutionMap>
   <Elements>
-    <DSIronPythonNode.PythonNode guid="78798a42-e6fb-4f4c-97a1-3b6fb100541e" type="DSIronPythonNode.PythonNode" nickname="Python Script" x="287.36871836619" y="-47.0255463665406" isVisible="true" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
+    <DSIronPythonNode.PythonNode guid="78798a42-e6fb-4f4c-97a1-3b6fb100541e" type="DSIronPythonNode.PythonNode" nickname="Python Script" x="287.36871836619" y="-47.0255463665406" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
       <Script>import clr
 clr.AddReference('ProtoGeometry')
 from Autodesk.DesignScript.Geometry import *
@@ -79,14 +84,51 @@ OUT = out_points</Script>
       <Range min="0" max="250" step="0.01" />
     </DSCoreNodesUI.Input.DoubleSlider>
     <DSCoreNodesUI.Input.DoubleSlider guid="0a494160-87d9-491a-857c-73c25a34e048" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Step size" x="-42.8399340187427" y="143.632149968808" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Double>0.047</System.Double>
+      <System.Double>0.046</System.Double>
       <Range min="0.001" max="0.2" step="0.001" />
     </DSCoreNodesUI.Input.DoubleSlider>
     <DSCoreNodesUI.BoolSelector guid="24da7bab-17a9-4b6a-9389-d36c53377414" type="DSCoreNodesUI.BoolSelector" nickname="Epicycloid?" x="287.48813769587" y="146.756474517281" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
       <System.Boolean>True</System.Boolean>
     </DSCoreNodesUI.BoolSelector>
+    <DSIronPythonNode.PythonNode guid="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" type="DSIronPythonNode.PythonNode" nickname="Python Script" x="429.521455490803" y="-47.6296044168546" isVisible="true" isUpstreamVisible="true" lacing="Disabled" inputcount="1">
+      <Script>import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+
+import sys
+sys.path.append(r'C:\Program Files (x86)\IronPython 2.7\Lib')
+
+#The inputs to this node will be stored as a list in the IN variable.
+dataEnteringNode = IN
+
+import math
+import random
+
+PI = 3.14159
+out_polygons = []
+lines = IN[0]
+
+for line in lines:
+	d1 = math.sqrt(math.pow(line.StartPoint.X, 2) + math.pow(line.StartPoint.Y, 2)) * 0.05
+	d2 = math.sqrt(math.pow(line.EndPoint.X, 2) + math.pow(line.EndPoint.Y, 2)) * 0.05
+	n = Vector.ByTwoPoints(line.StartPoint, line.EndPoint)
+	v1 = n.Cross(Vector.ByCoordinates(0, 0, 1)).Normalized().Scale(d1)
+	v2 = n.Cross(Vector.ByCoordinates(0, 0, 1)).Normalized().Scale(d2)
+
+	pts = []
+	pts.Add(line.StartPoint.Add(v1))
+	pts.Add(line.StartPoint.Subtract(v1))
+	pts.Add(line.EndPoint.Subtract(v2))
+	pts.Add(line.EndPoint.Add(v2))
+	out_polygons.Add(Polygon.ByPoints(pts))
+
+	
+#Assign your output to the OUT variable
+OUT = out_polygons</Script>
+    </DSIronPythonNode.PythonNode>
   </Elements>
   <Connectors>
+    <Dynamo.Models.ConnectorModel start="78798a42-e6fb-4f4c-97a1-3b6fb100541e" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="0" portType="0" />
     <Dynamo.Models.ConnectorModel start="ce4d55e7-5cc5-49ad-9f46-a7ae9e6deeb9" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="0" portType="0" />
     <Dynamo.Models.ConnectorModel start="7e844350-4e3a-4a8f-a794-3813d252d06a" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="1" portType="0" />
     <Dynamo.Models.ConnectorModel start="ce204e6c-e33e-411d-98d3-e0eb27447c7d" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="2" portType="0" />
