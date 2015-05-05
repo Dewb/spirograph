@@ -1,4 +1,4 @@
-<Workspace Version="0.8.0.950" X="40.9097490058157" Y="48.4792103161151" zoom="0.610282075168554" Name="Home" RunType="Manual" RunPeriod="100" HasRunWithoutCrash="True">
+<Workspace Version="0.8.0.950" X="34.1951956177699" Y="79.6846628818207" zoom="0.544907913843699" Name="Home" RunType="Manual" RunPeriod="100" HasRunWithoutCrash="True">
   <NamespaceResolutionMap>
     <ClassMap partialName="Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
     <ClassMap partialName="Plane" resolvedName="Autodesk.DesignScript.Geometry.Plane" assemblyName="ProtoGeometry.dll" />
@@ -6,7 +6,7 @@
     <ClassMap partialName="Math" resolvedName="DSCore.Math" assemblyName="DSCoreNodes.dll" />
   </NamespaceResolutionMap>
   <Elements>
-    <DSIronPythonNode.PythonNode guid="78798a42-e6fb-4f4c-97a1-3b6fb100541e" type="DSIronPythonNode.PythonNode" nickname="Python Script" x="287.36871836619" y="-47.0255463665406" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
+    <DSIronPythonNode.PythonNode guid="78798a42-e6fb-4f4c-97a1-3b6fb100541e" type="DSIronPythonNode.PythonNode" nickname="Spirograph" x="287.36871836619" y="-47.0255463665406" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
       <Script>import clr
 clr.AddReference('ProtoGeometry')
 from Autodesk.DesignScript.Geometry import *
@@ -64,7 +64,7 @@ def hypocycloidLine(R, r, p, t1, t2):
 def epicycloidLine(R, r, p, t1, t2):
 	return Line.ByStartPointEndPoint(epicycloidPoint(R, r, p, t1), epicycloidPoint(R, r, p, t2))
 
-for t in seq(0 * PI, 36 * PI, step):
+for t in seq(0 * PI, 39.98 * PI, step):
 	#out_points.Add(epicycloidPoint(R, r, p, t) if epicycloid else hypocycloidPoint(R, r, p, t))
 	out_points.Add(epicycloidLine(R, r, p, t, t + step) if epicycloid else hypocycloidLine(R, r, p, t, t + step))
 	
@@ -84,13 +84,13 @@ OUT = out_points</Script>
       <Range min="0" max="250" step="0.01" />
     </DSCoreNodesUI.Input.DoubleSlider>
     <DSCoreNodesUI.Input.DoubleSlider guid="0a494160-87d9-491a-857c-73c25a34e048" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Step size" x="-42.8399340187427" y="143.632149968808" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Double>0.046</System.Double>
+      <System.Double>0.027</System.Double>
       <Range min="0.001" max="0.2" step="0.001" />
     </DSCoreNodesUI.Input.DoubleSlider>
     <DSCoreNodesUI.BoolSelector guid="24da7bab-17a9-4b6a-9389-d36c53377414" type="DSCoreNodesUI.BoolSelector" nickname="Epicycloid?" x="287.48813769587" y="146.756474517281" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
       <System.Boolean>True</System.Boolean>
     </DSCoreNodesUI.BoolSelector>
-    <DSIronPythonNode.PythonNode guid="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" type="DSIronPythonNode.PythonNode" nickname="Python Script" x="429.521455490803" y="-47.6296044168546" isVisible="true" isUpstreamVisible="true" lacing="Disabled" inputcount="1">
+    <DSIronPythonNode.PythonNode guid="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" type="DSIronPythonNode.PythonNode" nickname="Polygonize" x="429.521455490803" y="-47.6296044168546" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="2">
       <Script>import clr
 clr.AddReference('ProtoGeometry')
 from Autodesk.DesignScript.Geometry import *
@@ -107,25 +107,30 @@ import random
 PI = 3.14159
 out_polygons = []
 lines = IN[0]
+width = float(IN[1])
 
-for line in lines:
-	d1 = math.sqrt(math.pow(line.StartPoint.X, 2) + math.pow(line.StartPoint.Y, 2)) * 0.05
-	d2 = math.sqrt(math.pow(line.EndPoint.X, 2) + math.pow(line.EndPoint.Y, 2)) * 0.05
-	n = Vector.ByTwoPoints(line.StartPoint, line.EndPoint)
-	v1 = n.Cross(Vector.ByCoordinates(0, 0, 1)).Normalized().Scale(d1)
-	v2 = n.Cross(Vector.ByCoordinates(0, 0, 1)).Normalized().Scale(d2)
+def getCornersForPoint(pt, normal):
+	d = math.pow(math.pow(pt.X, 2) + math.pow(pt.Y, 2), 0.8) * width
+	v = normal.Cross(Vector.ByCoordinates(0, 0, 1)).Normalized().Scale(d)
+	return [pt.Add(v), pt.Subtract(v)]
 
-	pts = []
-	pts.Add(line.StartPoint.Add(v1))
-	pts.Add(line.StartPoint.Subtract(v1))
-	pts.Add(line.EndPoint.Subtract(v2))
-	pts.Add(line.EndPoint.Add(v2))
-	out_polygons.Add(Polygon.ByPoints(pts))
+for index in range(0, len(lines), 1):
+	line = lines[index]
+	nextline = lines[index + 1 if index &lt; len(lines) - 1 else len(lines) - 1]
+	prevline = lines[index - 1 if index &gt; 0 else 0]
+	n1 = Vector.ByTwoPoints(prevline.StartPoint, line.EndPoint)
+	n2 = Vector.ByTwoPoints(line.StartPoint, nextline.EndPoint)
+	out_polygons.Add(Polygon.ByPoints(getCornersForPoint(line.StartPoint, n1) + [p for p in reversed(getCornersForPoint(line.EndPoint, n2))]))
+	#p = getCornersForPoint(line.StartPoint, n1)
+	#out_polygons.Add(Line.ByStartPointEndPoint(p[0], p[1]))
 
-	
 #Assign your output to the OUT variable
 OUT = out_polygons</Script>
     </DSIronPythonNode.PythonNode>
+    <Dynamo.Nodes.CodeBlockNodeModel guid="cad54766-66a5-40c5-8491-ceadcd9c0f04" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Code Block" x="235" y="-138" isVisible="true" isUpstreamVisible="true" lacing="Disabled" CodeText="width = 0.0006;&#xA;depth = 4;" ShouldFocus="false" />
+    <Dynamo.Nodes.DSFunction guid="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" type="Dynamo.Nodes.DSFunction" nickname="Curve.ExtrudeAsSolid" x="576.231247796391" y="-72.3536571982447" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Curve.ExtrudeAsSolid@double">
+      <PortInfo index="1" default="True" />
+    </Dynamo.Nodes.DSFunction>
   </Elements>
   <Connectors>
     <Dynamo.Models.ConnectorModel start="78798a42-e6fb-4f4c-97a1-3b6fb100541e" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="0" portType="0" />
@@ -134,6 +139,9 @@ OUT = out_polygons</Script>
     <Dynamo.Models.ConnectorModel start="ce204e6c-e33e-411d-98d3-e0eb27447c7d" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="2" portType="0" />
     <Dynamo.Models.ConnectorModel start="0a494160-87d9-491a-857c-73c25a34e048" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="3" portType="0" />
     <Dynamo.Models.ConnectorModel start="24da7bab-17a9-4b6a-9389-d36c53377414" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="4" portType="0" />
+    <Dynamo.Models.ConnectorModel start="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" start_index="0" end="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="cad54766-66a5-40c5-8491-ceadcd9c0f04" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="cad54766-66a5-40c5-8491-ceadcd9c0f04" start_index="1" end="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" end_index="1" portType="0" />
   </Connectors>
   <Notes />
 </Workspace>
