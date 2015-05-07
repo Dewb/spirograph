@@ -1,4 +1,4 @@
-<Workspace Version="0.8.0.950" X="-64.0722214702095" Y="30.2081772325187" zoom="0.654949225390173" Name="Home" RunType="Manual" RunPeriod="100" HasRunWithoutCrash="True">
+<Workspace Version="0.8.0.950" X="69.039733228102" Y="262.640069697758" zoom="0.853194675637434" Name="Home" RunType="Manual" RunPeriod="100" HasRunWithoutCrash="True">
   <NamespaceResolutionMap>
     <ClassMap partialName="Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
     <ClassMap partialName="Plane" resolvedName="Autodesk.DesignScript.Geometry.Plane" assemblyName="ProtoGeometry.dll" />
@@ -6,7 +6,7 @@
     <ClassMap partialName="Math" resolvedName="DSCore.Math" assemblyName="DSCoreNodes.dll" />
   </NamespaceResolutionMap>
   <Elements>
-    <DSIronPythonNode.PythonNode guid="78798a42-e6fb-4f4c-97a1-3b6fb100541e" type="DSIronPythonNode.PythonNode" nickname="Spirograph" x="287.36871836619" y="-47.0255463665406" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
+    <DSIronPythonNode.PythonNode guid="78798a42-e6fb-4f4c-97a1-3b6fb100541e" type="DSIronPythonNode.PythonNode" nickname="Spirograph" x="290.884914711132" y="-44.6814154699128" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
       <Script>import clr
 clr.AddReference('ProtoGeometry')
 from Autodesk.DesignScript.Geometry import *
@@ -64,7 +64,7 @@ def hypocycloidLine(R, r, p, t1, t2):
 def epicycloidLine(R, r, p, t1, t2):
 	return Line.ByStartPointEndPoint(epicycloidPoint(R, r, p, t1), epicycloidPoint(R, r, p, t2))
 
-for t in seq(0 * PI, 39.98 * PI, step):
+for t in seq(-0.38 * PI, 41.47 * PI, step):
 	#out_points.Add(epicycloidPoint(R, r, p, t) if epicycloid else hypocycloidPoint(R, r, p, t))
 	out_points.Add(epicycloidLine(R, r, p, t, t + step) if epicycloid else hypocycloidLine(R, r, p, t, t + step))
 	
@@ -84,13 +84,13 @@ OUT = out_points</Script>
       <Range min="0" max="250" step="0.01" />
     </DSCoreNodesUI.Input.DoubleSlider>
     <DSCoreNodesUI.Input.DoubleSlider guid="0a494160-87d9-491a-857c-73c25a34e048" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Step size" x="-42.8399340187427" y="143.632149968808" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Double>0.04</System.Double>
+      <System.Double>0.038</System.Double>
       <Range min="0.001" max="0.2" step="0.001" />
     </DSCoreNodesUI.Input.DoubleSlider>
-    <DSCoreNodesUI.BoolSelector guid="24da7bab-17a9-4b6a-9389-d36c53377414" type="DSCoreNodesUI.BoolSelector" nickname="Epicycloid?" x="287.48813769587" y="146.756474517281" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+    <DSCoreNodesUI.BoolSelector guid="24da7bab-17a9-4b6a-9389-d36c53377414" type="DSCoreNodesUI.BoolSelector" nickname="Epicycloid?" x="293.470980187475" y="172.209759998108" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
       <System.Boolean>True</System.Boolean>
     </DSCoreNodesUI.BoolSelector>
-    <DSIronPythonNode.PythonNode guid="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" type="DSIronPythonNode.PythonNode" nickname="Polygonize" x="510.269043995493" y="-73.3220189410741" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="2">
+    <DSIronPythonNode.PythonNode guid="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" type="DSIronPythonNode.PythonNode" nickname="Variable Width Stroke Lines" x="443.775772139666" y="-44.8249024314344" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="5">
       <Script>import clr
 clr.AddReference('ProtoGeometry')
 from Autodesk.DesignScript.Geometry import *
@@ -107,11 +107,15 @@ import random
 PI = 3.14159
 out_polygons = []
 lines = IN[0]
-width = float(IN[1])
+mindist = float(IN[1])
+maxdist = float(IN[2])
+minwidth = float(IN[3])
+maxwidth = float(IN[4])
 
 def getCornersForPoint(pt, normal):
-	d = math.pow(math.pow(pt.X, 2) + math.pow(pt.Y, 2), 0.8) * width
-	v = normal.Cross(Vector.ByCoordinates(0, 0, 1)).Normalized().Scale(d)
+	d = math.sqrt(math.pow(pt.X, 2) + math.pow(pt.Y, 2))
+	width = (d - mindist) / (maxdist - mindist) * (maxwidth - minwidth) + minwidth
+	v = normal.Cross(Vector.ByCoordinates(0, 0, 1)).Normalized().Scale(width)
 	return [pt.Add(v), pt.Subtract(v)]
 
 for index in range(0, len(lines), 1):
@@ -127,116 +131,47 @@ for index in range(0, len(lines), 1):
 #Assign your output to the OUT variable
 OUT = out_polygons</Script>
     </DSIronPythonNode.PythonNode>
-    <Dynamo.Nodes.CodeBlockNodeModel guid="cad54766-66a5-40c5-8491-ceadcd9c0f04" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Code Block" x="316.665174737698" y="-150.84620726211" isVisible="true" isUpstreamVisible="true" lacing="Disabled" CodeText="width = 0.0007;&#xA;depth = 4;" ShouldFocus="false" />
-    <Dynamo.Nodes.DSFunction guid="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" type="Dynamo.Nodes.DSFunction" nickname="Curve.ExtrudeAsSolid" x="658.814008767097" y="-76.024002130276" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Curve.ExtrudeAsSolid@double">
+    <Dynamo.Nodes.CodeBlockNodeModel guid="cad54766-66a5-40c5-8491-ceadcd9c0f04" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Code Block" x="251.755076021296" y="-192.008708887146" isVisible="true" isUpstreamVisible="true" lacing="Disabled" CodeText="mindist = R;&#xA;maxdist = R + r + p;" ShouldFocus="false" />
+    <Dynamo.Nodes.DSFunction guid="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" type="Dynamo.Nodes.DSFunction" nickname="Curve.ExtrudeAsSolid" x="805.676448833161" y="-235.115691871516" isVisible="true" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Curve.ExtrudeAsSolid@double">
       <PortInfo index="1" default="True" />
     </Dynamo.Nodes.DSFunction>
-    <DSCoreNodesUI.BoolSelector guid="25117ee9-45e7-456b-8b8c-dec4b8560538" type="DSCoreNodesUI.BoolSelector" nickname="Epicycloid?" x="291.492449742756" y="475.549512775846" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Boolean>False</System.Boolean>
-    </DSCoreNodesUI.BoolSelector>
-    <DSIronPythonNode.PythonNode guid="69b1507b-e253-47a8-9d7a-495e060353cd" type="DSIronPythonNode.PythonNode" nickname="Spirograph" x="291.373030413076" y="258.637764135587" isVisible="false" isUpstreamVisible="true" lacing="Disabled" inputcount="6">
-      <Script>import clr
-clr.AddReference('ProtoGeometry')
-from Autodesk.DesignScript.Geometry import *
-
-import sys
-sys.path.append(r'C:\Program Files (x86)\IronPython 2.7\Lib')
-
-#The inputs to this node will be stored as a list in the IN variable.
-dataEnteringNode = IN
-
-import math
-import random
-
-PI = 3.14159
-out_points = []
-R = float(IN[0])
-r = float(IN[1])
-p = float(IN[2])
-step = float(IN[3])
-epicycloid = bool(IN[4])
-offset = float(IN[5])
-
-
-def jitter():
-	r = random.random() - 0.5
-	return r * 0.00002
-
-def seq(start, stop, step=1):
-    n = int(round((stop - start)/step))
-    if n &gt; 1:
-        return([start + step*i for i in range(n+1)])
-    else:
-        return([])
-
-def hypocycloidPoint(R, r, p, t):
-	a = R - r
-	b = r/R * t + offset
-	c = (1 - r/R) * t + offset
-	x = a * math.cos(b) - p * math.cos(c)
-	y = a * math.sin(b) + p * math.sin(c)
-	return Point.ByCoordinates(x, y)
-	
-	
-def epicycloidPoint(R, r, p, t):
-	a = R + r
-	b = r/R * t + offset
-	c = (1 + r/R) * t + offset
-	x = a * math.cos(b) - p * math.cos(c)
-	y = a * math.sin(b) + p * math.sin(c)
-	return Point.ByCoordinates(x, y)
-
-def hypocycloidLine(R, r, p, t1, t2):
-	return Line.ByStartPointEndPoint(hypocycloidPoint(R, r, p, t1), hypocycloidPoint(R, r, p, t2))
-
-
-def epicycloidLine(R, r, p, t1, t2):
-	return Line.ByStartPointEndPoint(epicycloidPoint(R, r, p, t1), epicycloidPoint(R, r, p, t2))
-
-for t in seq(0 * PI, 39.98 * PI, step):
-	#out_points.Add(epicycloidPoint(R, r, p, t) if epicycloid else hypocycloidPoint(R, r, p, t))
-	out_points.Add(epicycloidLine(R, r, p, t, t + step) if epicycloid else hypocycloidLine(R, r, p, t, t + step))
-	
-#Assign your output to the OUT variable
-OUT = out_points</Script>
-    </DSIronPythonNode.PythonNode>
-    <DSCoreNodesUI.Input.DoubleSlider guid="c8e438fd-4ba5-47b1-be10-40efef0ea66b" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Gear radius" x="-39.0837365357199" y="324.038884538351" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Double>88.2</System.Double>
-      <Range min="1" max="500" step="0.01" />
+    <DSCoreNodesUI.Input.DoubleSlider guid="11f772a3-497c-4baf-a465-aa42a933dbed" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Min width" x="-66.2784496394081" y="-190.835779360003" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double>0.65</System.Double>
+      <Range min="0.1" max="10" step="0.05" />
     </DSCoreNodesUI.Input.DoubleSlider>
-    <DSCoreNodesUI.Input.DoubleSlider guid="ff9fad96-befe-4fd0-8947-f2d6b43dc113" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Pen offset" x="-38.7011963833014" y="387.308228185854" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Double>34.33</System.Double>
-      <Range min="0" max="250" step="0.01" />
+    <DSCoreNodesUI.Input.DoubleSlider guid="34417a34-b9bb-4e86-acdd-14b5aed8d8ac" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Max width" x="-68.9438347548038" y="-131.757412037845" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double>3</System.Double>
+      <Range min="0.1" max="10" step="0.05" />
     </DSCoreNodesUI.Input.DoubleSlider>
-    <DSCoreNodesUI.Input.DoubleSlider guid="d2a4ef77-1046-4e37-a503-3713e2b079fb" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Step size" x="-38.8356219718564" y="449.295460470936" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Double>0.141</System.Double>
-      <Range min="0.001" max="0.2" step="0.001" />
+    <Dynamo.Nodes.DSFunction guid="3f66c166-92e8-4f2e-9338-891b9bf5b4a1" type="Dynamo.Nodes.DSFunction" nickname="Geometry.Rotate" x="692.855705840527" y="-14.6033931261849" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Geometry.Rotate@Autodesk.DesignScript.Geometry.Plane,double">
+      <PortInfo index="2" default="True" />
+    </Dynamo.Nodes.DSFunction>
+    <Dynamo.Nodes.DSFunction guid="e9cceacc-e370-4135-bb1a-8cd84b985da7" type="Dynamo.Nodes.DSFunction" nickname="Plane.XY" x="615.499386251812" y="157.690227775955" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="ProtoGeometry.dll" function="Autodesk.DesignScript.Geometry.Plane.XY" />
+    <DSCoreNodesUI.Input.DoubleSlider guid="b7e82424-84ac-44fc-b671-38e0361b3052" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Number Slider" x="500.636972317052" y="265.520249020831" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
+      <System.Double>-4</System.Double>
+      <Range min="-180" max="180" step="1" />
     </DSCoreNodesUI.Input.DoubleSlider>
-    <DSCoreNodesUI.Input.DoubleSlider guid="e2ed1223-bf63-4939-9a78-ba0e6045cd20" type="DSCoreNodesUI.Input.DoubleSlider" nickname="Outer ring radius" x="-37.6268481769833" y="258.233532345826" isVisible="true" isUpstreamVisible="true" lacing="Disabled">
-      <System.Double>205.82</System.Double>
-      <Range min="1" max="500" step="0.01" />
-    </DSCoreNodesUI.Input.DoubleSlider>
-    <Dynamo.Nodes.DSVarArgFunction guid="96dd1a10-19b9-4036-a46d-bc31a42bc78b" type="Dynamo.Nodes.DSVarArgFunction" nickname="List.Join" x="554.534831731491" y="225.978638937554" isVisible="false" isUpstreamVisible="true" lacing="Shortest" assembly="DSCoreNodes.dll" function="DSCore.List.Join@var[]..[]" inputcount="2" />
-    <Dynamo.Nodes.CodeBlockNodeModel guid="13d9185f-ef13-430b-85d8-3bae2718fe93" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Code Block" x="7" y="566" isVisible="true" isUpstreamVisible="true" lacing="Disabled" CodeText="offset = 0.75;" ShouldFocus="false" />
+    <Dynamo.Nodes.CodeBlockNodeModel guid="608b9f36-db80-40c6-8b54-538012ba9a9e" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Code Block" x="672.408916276394" y="-204.858240548379" isVisible="true" isUpstreamVisible="true" lacing="Disabled" CodeText="depth = 5;" ShouldFocus="false" />
   </Elements>
   <Connectors>
-    <Dynamo.Models.ConnectorModel start="78798a42-e6fb-4f4c-97a1-3b6fb100541e" start_index="0" end="96dd1a10-19b9-4036-a46d-bc31a42bc78b" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="78798a42-e6fb-4f4c-97a1-3b6fb100541e" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="0" portType="0" />
     <Dynamo.Models.ConnectorModel start="ce4d55e7-5cc5-49ad-9f46-a7ae9e6deeb9" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="ce4d55e7-5cc5-49ad-9f46-a7ae9e6deeb9" start_index="0" end="cad54766-66a5-40c5-8491-ceadcd9c0f04" end_index="0" portType="0" />
     <Dynamo.Models.ConnectorModel start="7e844350-4e3a-4a8f-a794-3813d252d06a" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="7e844350-4e3a-4a8f-a794-3813d252d06a" start_index="0" end="cad54766-66a5-40c5-8491-ceadcd9c0f04" end_index="1" portType="0" />
     <Dynamo.Models.ConnectorModel start="ce204e6c-e33e-411d-98d3-e0eb27447c7d" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="ce204e6c-e33e-411d-98d3-e0eb27447c7d" start_index="0" end="cad54766-66a5-40c5-8491-ceadcd9c0f04" end_index="2" portType="0" />
     <Dynamo.Models.ConnectorModel start="0a494160-87d9-491a-857c-73c25a34e048" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="3" portType="0" />
     <Dynamo.Models.ConnectorModel start="24da7bab-17a9-4b6a-9389-d36c53377414" start_index="0" end="78798a42-e6fb-4f4c-97a1-3b6fb100541e" end_index="4" portType="0" />
-    <Dynamo.Models.ConnectorModel start="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" start_index="0" end="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" start_index="0" end="3f66c166-92e8-4f2e-9338-891b9bf5b4a1" end_index="0" portType="0" />
     <Dynamo.Models.ConnectorModel start="cad54766-66a5-40c5-8491-ceadcd9c0f04" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="1" portType="0" />
-    <Dynamo.Models.ConnectorModel start="cad54766-66a5-40c5-8491-ceadcd9c0f04" start_index="1" end="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" end_index="1" portType="0" />
-    <Dynamo.Models.ConnectorModel start="25117ee9-45e7-456b-8b8c-dec4b8560538" start_index="0" end="69b1507b-e253-47a8-9d7a-495e060353cd" end_index="4" portType="0" />
-    <Dynamo.Models.ConnectorModel start="69b1507b-e253-47a8-9d7a-495e060353cd" start_index="0" end="96dd1a10-19b9-4036-a46d-bc31a42bc78b" end_index="1" portType="0" />
-    <Dynamo.Models.ConnectorModel start="c8e438fd-4ba5-47b1-be10-40efef0ea66b" start_index="0" end="69b1507b-e253-47a8-9d7a-495e060353cd" end_index="1" portType="0" />
-    <Dynamo.Models.ConnectorModel start="ff9fad96-befe-4fd0-8947-f2d6b43dc113" start_index="0" end="69b1507b-e253-47a8-9d7a-495e060353cd" end_index="2" portType="0" />
-    <Dynamo.Models.ConnectorModel start="d2a4ef77-1046-4e37-a503-3713e2b079fb" start_index="0" end="69b1507b-e253-47a8-9d7a-495e060353cd" end_index="3" portType="0" />
-    <Dynamo.Models.ConnectorModel start="e2ed1223-bf63-4939-9a78-ba0e6045cd20" start_index="0" end="69b1507b-e253-47a8-9d7a-495e060353cd" end_index="0" portType="0" />
-    <Dynamo.Models.ConnectorModel start="96dd1a10-19b9-4036-a46d-bc31a42bc78b" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="0" portType="0" />
-    <Dynamo.Models.ConnectorModel start="13d9185f-ef13-430b-85d8-3bae2718fe93" start_index="0" end="69b1507b-e253-47a8-9d7a-495e060353cd" end_index="5" portType="0" />
+    <Dynamo.Models.ConnectorModel start="cad54766-66a5-40c5-8491-ceadcd9c0f04" start_index="1" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="11f772a3-497c-4baf-a465-aa42a933dbed" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="3" portType="0" />
+    <Dynamo.Models.ConnectorModel start="34417a34-b9bb-4e86-acdd-14b5aed8d8ac" start_index="0" end="7b786d81-a0e0-4d68-8b2e-e00ef4df1d6a" end_index="4" portType="0" />
+    <Dynamo.Models.ConnectorModel start="3f66c166-92e8-4f2e-9338-891b9bf5b4a1" start_index="0" end="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" end_index="0" portType="0" />
+    <Dynamo.Models.ConnectorModel start="e9cceacc-e370-4135-bb1a-8cd84b985da7" start_index="0" end="3f66c166-92e8-4f2e-9338-891b9bf5b4a1" end_index="1" portType="0" />
+    <Dynamo.Models.ConnectorModel start="b7e82424-84ac-44fc-b671-38e0361b3052" start_index="0" end="3f66c166-92e8-4f2e-9338-891b9bf5b4a1" end_index="2" portType="0" />
+    <Dynamo.Models.ConnectorModel start="608b9f36-db80-40c6-8b54-538012ba9a9e" start_index="0" end="5b3790eb-70f6-4819-9b1d-fc4b8b0acf1d" end_index="1" portType="0" />
   </Connectors>
   <Notes />
 </Workspace>
