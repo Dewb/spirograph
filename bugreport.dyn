@@ -1,0 +1,18 @@
+<Workspace Version="0.8.0.950" X="236.793579093075" Y="465.997111117158" zoom="0.639836796280768" Name="Home" RunType="Automatic" RunPeriod="100" HasRunWithoutCrash="True">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Plane" resolvedName="Autodesk.DesignScript.Geometry.Plane" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Rectangle" resolvedName="Autodesk.DesignScript.Geometry.Rectangle" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Math" resolvedName="DSCore.Math" assemblyName="DSCoreNodes.dll" />
+    <ClassMap partialName="Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Math.PI" resolvedName="DSCore.Math" assemblyName="DSCoreNodes.dll" />
+    <ClassMap partialName="Arc" resolvedName="Autodesk.DesignScript.Geometry.Arc" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Line" resolvedName="Autodesk.DesignScript.Geometry.Line" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Solid" resolvedName="Autodesk.DesignScript.Geometry.Solid" assemblyName="ProtoGeometry.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Nodes.CodeBlockNodeModel guid="c0f7f25d-1874-46cf-a60c-2468c2c08684" type="Dynamo.Nodes.CodeBlockNodeModel" nickname="Code Block" x="382.600386237626" y="-708.523164399756" isVisible="true" isUpstreamVisible="true" lacing="Disabled" CodeText="arc = 360.0 / 14.0;&#xA;theta1 = 0..360..arc;&#xA;theta2 = theta1 + arc/2.0;&#xA;theta3 = theta1 + arc;&#xA;r1 = 120;&#xA;r2 = 140;&#xA;p1 = Point.ByCoordinates(r1 * Math.Cos(theta1), r1 * Math.Sin(theta1), 0);&#xA;p2 = Point.ByCoordinates(r2 * Math.Cos(theta2), r2 * Math.Sin(theta2), 0);&#xA;p3 = Point.ByCoordinates(r1 * Math.Cos(theta3), r1 * Math.Sin(theta3), 0);&#xA;a = Arc.ByThreePoints(p1, p2, p3);&#xA;// change the 0 here to a nonzero value, then all the sweeps work&#xA;plane = Plane.ByOriginNormal(p2, Vector.ByCoordinates(p3.X-p1.X, p3.Y-p1.Y, 0));&#xA;profile = Rectangle.ByWidthHeight(plane, 5, 5);&#xA;solid = Solid.BySweep(profile, a);" ShouldFocus="false" />
+  </Elements>
+  <Connectors />
+  <Notes />
+</Workspace>

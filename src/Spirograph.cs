@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Autodesk.DesignScript.Runtime;
@@ -33,11 +34,12 @@ namespace Spirograph
          return Line.ByStartPointEndPoint(computePoint(R, r, p, t1, epicycloid), computePoint(R, r, p, t2, epicycloid));
       }
 
-      public static List<Line> AsLines(double ring_radius, double gear_radius, double pen_offset = 0.0, double step_size = 1.0, bool epicycloid = false)
+      public static List<Line> AsLines(double ring_radius, double gear_radius, double pen_offset = 0.0, bool epicycloid = false, double steps = 10000, double startParam = 0.0, double endParam = 100.0)
       {
          List<Line> output = new List<Line>();
-         for (double t = -0.38 * Math.PI; t < 41.47 * Math.PI; t += step_size) {
-   	      output.Add(computeLine(ring_radius, gear_radius, pen_offset, t, t + step_size, epicycloid));
+         double delta = (endParam - startParam) / steps;
+         for (double t = startParam; t < endParam; t += delta) {
+   	      output.Add(computeLine(ring_radius, gear_radius, pen_offset, t, t + delta, epicycloid));
          }
          return output;
       }
@@ -84,6 +86,43 @@ namespace Spirograph
             }
          }
          return output;
+      }
+
+      public static string WritePolygonsToSVG(List<Polygon> polygons, string filePath)
+      {
+         using (var sw = new StreamWriter(filePath, false))
+         {
+            sw.Write("<?xml version='1.0' standalone='no'?>\n<svg version='1.1' xmlns='http://www.w3.org/2000/svg'>\n");
+            foreach (Polygon p in polygons)
+            {
+               sw.Write("<polygon points='");
+               foreach (Point pt in p.Points)
+               {
+                  sw.Write(string.Format("{0} {1} ", pt.X, pt.Y));
+               }
+               sw.Write("'/>\n");
+            }
+            sw.Write("</svg>");
+            sw.Flush();
+         }
+
+         return filePath;
+      }
+
+      public static string WriteArcsToSvg(List<Arc> arcs, double strokeWidth, string filePath)
+      {
+         using (var sw = new StreamWriter(filePath, false))
+         {
+            sw.Write("<?xml version='1.0' standalone='no'?>\n<svg version='1.1' xmlns='http://www.w3.org/2000/svg'>\n");
+            foreach (Arc a in arcs)
+            {
+               sw.Write("<path d='M{0},{1} A{2},{3} 0 0,1 {4},{5}' style='stroke: #000000; stroke-width:{6}; fill:none'/>\n", a.StartPoint.X, a.StartPoint.Y, a.Radius, a.Radius, a.EndPoint.X, a.EndPoint.Y, strokeWidth);
+            }
+            sw.Write("</svg>");
+            sw.Flush();
+         }
+
+         return filePath;
       }
    }
 }
